@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize};
+use crate::marketdata::{BookLevel, Orderbook};
+use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
-use crate::marketdata::{Orderbook, BookLevel};
 
 #[derive(Serialize)]
 pub struct BookSubRequest {
@@ -9,14 +9,18 @@ pub struct BookSubRequest {
 }
 #[derive(Serialize)]
 struct BookSubRequestData {
-    pub channel : String
+    pub channel: String,
 }
 impl BookSubRequest {
     pub fn new(symbol: &str) -> Self {
-        Self { event: "bts:subscribe".to_string(), data: BookSubRequestData { channel: format!("order_book_{symbol}") } }
+        Self {
+            event: "bts:subscribe".to_string(),
+            data: BookSubRequestData {
+                channel: format!("order_book_{symbol}"),
+            },
+        }
     }
 }
-
 
 #[derive(Deserialize)]
 pub struct BookSubRequestResponse {
@@ -24,13 +28,12 @@ pub struct BookSubRequestResponse {
     pub channel: String,
 }
 #[derive(Deserialize)]
-pub(crate) struct BookMessage{
-    pub data : BookMessageData,
+pub(crate) struct BookMessage {
+    pub data: BookMessageData,
 }
 
-
 #[derive(Deserialize)]
-pub(crate) struct BookMessageData{
-    pub bids : SmallVec<[BookLevel;128]>,
-    pub asks : SmallVec<[BookLevel;128]>,
+pub(crate) struct BookMessageData {
+    pub bids: SmallVec<[BookLevel; 128]>,
+    pub asks: SmallVec<[BookLevel; 128]>,
 }

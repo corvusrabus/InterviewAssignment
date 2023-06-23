@@ -1,12 +1,14 @@
 mod json_messages;
 
-use log::error;
-use url::Url;
-use crate::defines::Exchange;
 use crate::defines::json_parser::{JSONError, JSONParser};
-use crate::feed::exchanges::binance::json_messages::{BinanceBookMessage, BookSubRequest, BookSubRequestResponse};
+use crate::defines::Exchange;
+use crate::feed::exchanges::binance::json_messages::{
+    BinanceBookMessage, BookSubRequest, BookSubRequestResponse,
+};
 use crate::feed::ws_api_feed::OrderbookWsApi;
 use crate::marketdata::Orderbook;
+use log::error;
+use url::Url;
 
 const BINANCE_BOOK_DEPTH: usize = 10;
 
@@ -19,9 +21,7 @@ impl OrderbookWsApi for BinanceOrderbookWsApi {
 
     fn verify_confirmation(symbol: &str, message: &str) -> bool {
         match JSONParser::from_str::<BookSubRequestResponse>(message) {
-            Ok(x) => {
-                x.result == None
-            }
+            Ok(x) => x.result == None,
             Err(e) => {
                 error!(target : "BinanceFeed", "Unexpected json {message}; {e:?}");
                 false

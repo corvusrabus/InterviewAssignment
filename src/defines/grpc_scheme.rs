@@ -14,3 +14,5 @@ pub struct MessageBookLevel<'a> {
     pub(crate) price: Decimal,
     pub(crate) amount: Decimal,
 }
+
+tonic::include_proto!("orderbook");

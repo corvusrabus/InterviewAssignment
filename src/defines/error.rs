@@ -1,6 +1,5 @@
-use tokio_tungstenite::tungstenite::Error as TTError;
 use crate::defines::json_parser::JSONError;
-
+use tokio_tungstenite::tungstenite::Error as TTError;
 
 pub type WebsocketResult<T> = Result<T, WebsocketError>;
 #[derive(Debug)]

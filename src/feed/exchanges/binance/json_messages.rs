@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
-use smallvec::SmallVec;
 use crate::feed::exchanges::binance::BINANCE_BOOK_DEPTH;
-use crate::marketdata::{Orderbook, BookLevel};
+use crate::marketdata::BookLevel;
+use serde::{Deserialize, Serialize};
+use smallvec::SmallVec;
 
 #[derive(Serialize)]
 pub struct BookSubRequest {
@@ -13,10 +13,13 @@ pub struct BookSubRequest {
 impl BookSubRequest {
     const FIRST_ID: usize = 1;
     pub fn new(symbol: &str) -> Self {
-        Self { method: String::from("SUBSCRIBE"), params: vec![format!("{symbol}@depth{BINANCE_BOOK_DEPTH}@100ms")], id: Self::FIRST_ID }
+        Self {
+            method: String::from("SUBSCRIBE"),
+            params: vec![format!("{symbol}@depth{BINANCE_BOOK_DEPTH}@100ms")],
+            id: Self::FIRST_ID,
+        }
     }
 }
-
 
 #[derive(Deserialize)]
 pub struct BookSubRequestResponse {
@@ -24,13 +27,12 @@ pub struct BookSubRequestResponse {
     pub id: usize,
 }
 #[derive(Deserialize)]
-pub(crate) struct BinanceBookMessage{
-    pub data : BinanceBookMessageData,
+pub(crate) struct BinanceBookMessage {
+    pub data: BinanceBookMessageData,
 }
 
-
 #[derive(Deserialize)]
-pub(crate) struct BinanceBookMessageData{
-    pub bids : SmallVec<[BookLevel;BINANCE_BOOK_DEPTH]>,
-    pub asks : SmallVec<[BookLevel;BINANCE_BOOK_DEPTH]>,
+pub(crate) struct BinanceBookMessageData {
+    pub bids: SmallVec<[BookLevel; BINANCE_BOOK_DEPTH]>,
+    pub asks: SmallVec<[BookLevel; BINANCE_BOOK_DEPTH]>,
 }
