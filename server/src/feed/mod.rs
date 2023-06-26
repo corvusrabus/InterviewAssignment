@@ -7,14 +7,10 @@ use crate::defines::Exchange;
 use crate::feed::exchanges::binance::BinanceOrderbookWsApi;
 use crate::feed::exchanges::bitstamp::BitstampOrderbookWsApi;
 use crate::feed::orderbook_feed::ExchangeOrderbookFeed;
-use crate::marketdata::Orderbook;
-use tokio::sync::mpsc::Sender;
-use tokio::task::JoinError;
 
 #[async_trait::async_trait]
 pub trait OrderbookFeed: Sync + Send {
     async fn start(&mut self, symbol: &str);
-    async fn join(&mut self) -> Result<(), JoinError>;
 }
 
 pub struct OrderbookFeedFactory {}

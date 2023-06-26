@@ -17,17 +17,11 @@ pub(in crate::feed) trait OrderbookWsApi: Send + Sync {
     /// Returns true if `message` confirms orderbook subscription for `symbol`
     fn verify_confirmation(symbol: &str, message: &str) -> bool;
     fn handle_message(msg: &str) -> Result<Orderbook, JSONError>;
-    ///
     fn connection_endpoint() -> Url;
     fn exchange() -> Exchange;
 }
 
 type WsStreamTT = WebSocketStream<MaybeTlsStream<TcpStream>>;
-
-struct OrderbookFeedUnsubscribed<ExchangeApi: OrderbookWsApi> {
-    stream: Option<WsStreamTT>,
-    api: PhantomData<ExchangeApi>,
-}
 
 pub(in crate::feed) struct OrderbookWebsocket<ExchangeApi: OrderbookWsApi> {
     stream: WsStreamTT,

@@ -1,4 +1,4 @@
-use crate::marketdata::{BookLevel, Orderbook};
+use crate::marketdata::BookLevel;
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 

@@ -1,20 +1,19 @@
 use crate::defines::book_callback::BookCallback;
-use crate::defines::grpc_scheme::{Level, MessageBookLevel, OrderbookUpdateMessage, Summary};
+use crate::defines::grpc_scheme::{Level, Summary};
 use crate::defines::{Exchange, BOOK_LEVELS_USED};
 use crate::helper::{is_ascending_by_key, is_descending_by_key};
+use async_broadcast::Sender;
 use async_trait::async_trait;
 use halfbrown::HashMap;
+use log::error;
 use parking_lot::Mutex;
 use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::Decimal;
 use serde::Deserialize;
 use smallvec::SmallVec;
-use std::cmp::{max, Ordering, Reverse};
+use std::cmp::{Ordering, Reverse};
 use std::collections::BinaryHeap;
-use tokio::sync::broadcast::Sender;
 use tonic::Status;
-
-mod books;
 
 #[derive(Debug, Copy, Clone, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 pub(crate) struct BookLevel {
@@ -61,11 +60,16 @@ impl BookCallback for BookAggregatorCallback {
             locked.add_new_book(book, exchange);
             locked.make_summary()
         };
-        // TODO remove unwrap and deal with not subscribed
-        self.sender.send(Ok(message)).unwrap();
+        let send_result = self.sender.broadcast(Ok(message)).await;
+        // Overflow should not happen but we should be able to see if it happens
+        // Error can be ignored because that only means that currently no one is subscribed
+        if let Ok(Some(_)) = send_result {
+            error!(target : "BookAggregatorCallback", "broadcast channel overflowed");
+        }
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct BookAggregator<const N_LEVELS: usize = BOOK_LEVELS_USED> {
     books: HashMap<Exchange, Orderbook>,
 }
@@ -79,12 +83,12 @@ impl<const N_LEVELS: usize> BookAggregator<N_LEVELS> {
         struct BookLevelAndExchangeHelper<'a>(&'a BookLevel, Exchange);
         impl<'a> PartialOrd for BookLevelAndExchangeHelper<'a> {
             fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-                self.0.partial_cmp(&other.0)
+                self.0.partial_cmp(other.0)
             }
         }
         impl<'a> Ord for BookLevelAndExchangeHelper<'a> {
             fn cmp(&self, other: &Self) -> Ordering {
-                self.0.cmp(&other.0)
+                self.0.cmp(other.0)
             }
         }
         let expected_number_of_entries = N_LEVELS;
@@ -106,7 +110,7 @@ impl<const N_LEVELS: usize> BookAggregator<N_LEVELS> {
                 ask_heap.push(Reverse(BookLevelAndExchangeHelper(level, *exchange)));
             }
         }
-        for i in 0..N_LEVELS {
+        for _ in 0..N_LEVELS {
             if let Some(BookLevelAndExchangeHelper(level, exchange)) = bid_heap.pop() {
                 bids.push(Level {
                     exchange: exchange.name().to_string(),
@@ -346,10 +350,10 @@ mod test {
                 a <= b,
                 BookLevel {
                     price: a,
-                    quantity: c
+                    quantity: c,
                 } <= BookLevel {
                     price: b,
-                    quantity: d
+                    quantity: d,
                 }
             )
         }

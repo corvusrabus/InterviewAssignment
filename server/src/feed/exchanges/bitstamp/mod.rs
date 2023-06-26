@@ -8,7 +8,7 @@ use crate::feed::exchanges::bitstamp::json_messages::{
 use crate::feed::ws_api_feed::OrderbookWsApi;
 use crate::marketdata::Orderbook;
 use log::error;
-use smallvec::{SmallVec, ToSmallVec};
+use smallvec::ToSmallVec;
 use std::cmp::min;
 use url::Url;
 

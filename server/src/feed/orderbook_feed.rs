@@ -1,14 +1,10 @@
 use crate::defines::book_callback::BookCallback;
-use crate::defines::Exchange;
 use crate::feed::ws_api_feed::{OrderbookWebsocket, OrderbookWsApi};
 use crate::feed::OrderbookFeed;
-use crate::helper::{is_ascending_by_key, is_descending_by_key};
-use crate::marketdata::Orderbook;
 use log::info;
 use std::marker::PhantomData;
 use std::time::Duration;
-use tokio::sync::mpsc::Sender;
-use tokio::task::{JoinError, JoinHandle};
+use tokio::task::JoinHandle;
 use tokio::time::sleep;
 
 pub(in crate::feed) struct ExchangeOrderbookFeed<ExchangeApi: OrderbookWsApi, T: BookCallback> {
@@ -65,13 +61,5 @@ impl<ExchangeApi: OrderbookWsApi, T: BookCallback> OrderbookFeed
             }
         });
         self.handle = Some(handle);
-    }
-
-    async fn join(&mut self) -> Result<(), JoinError> {
-        if let Some(handle) = self.handle.take() {
-            handle.await
-        } else {
-            Ok(())
-        }
     }
 }

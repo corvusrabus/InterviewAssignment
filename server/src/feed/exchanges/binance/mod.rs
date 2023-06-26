@@ -19,9 +19,9 @@ impl OrderbookWsApi for BinanceOrderbookWsApi {
         JSONParser::to_string(&BookSubRequest::new(symbol)).unwrap()
     }
 
-    fn verify_confirmation(symbol: &str, message: &str) -> bool {
+    fn verify_confirmation(_symbol: &str, message: &str) -> bool {
         match JSONParser::from_str::<BookSubRequestResponse>(message) {
-            Ok(x) => x.result == None,
+            Ok(x) => x.result.is_none(),
             Err(e) => {
                 error!(target : "BinanceFeed", "Unexpected json {message}; {e:?}");
                 false

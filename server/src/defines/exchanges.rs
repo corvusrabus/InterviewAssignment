@@ -12,12 +12,3 @@ impl Exchange {
         }
     }
 }
-
-// impl ToString for Exchange {
-//     fn to_string(&self) -> String {
-//         match self {
-//             Exchange::Binance => { "binance" }
-//             Exchange::Bitstamp => { "bitstamp" }
-//         }.to_string()
-//     }
-// }
