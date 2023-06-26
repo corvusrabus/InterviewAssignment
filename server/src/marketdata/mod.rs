@@ -165,7 +165,7 @@ mod test {
     use rust_decimal::prelude::ToPrimitive;
     use rust_decimal::Decimal;
     use rust_decimal_macros::dec;
-    use smallvec::{smallvec, SmallVec};
+    use smallvec::SmallVec;
     use std::collections::HashSet;
 
     const TEST_BOOKS_SIZE: usize = 10;
@@ -269,13 +269,19 @@ mod test {
             assert_eq!(self.price_to_exchange.len(), 4 * n);
             res
         }
-
+        fn check_spread_correctness(summary: &Summary) {
+            let spread = summary.spread;
+            let expected_spread = summary.asks.first().map(|x| x.price).unwrap_or_default()
+                - summary.bids.first().map(|x| x.price).unwrap_or_default();
+            assert!(approx_eq!(f64, spread, expected_spread, epsilon = 0.00001));
+        }
         fn check_correctness_of_summary(
             &self,
             binance_book: &Orderbook,
             bitstamp_book: &Orderbook,
             summary: Summary,
         ) {
+            Self::check_spread_correctness(&summary);
             let mut expected_bids: Vec<Decimal> = binance_book
                 .bids
                 .iter()
@@ -359,32 +365,8 @@ mod test {
         }
     }
 
-    // fn summaries_floating_point_equal(summary1: &Summary, summary2: &Summary) -> bool {
-    //     let first_res = approx_eq!(f64, summary1.spread, summary2.spread, epsilon = 0.001) &
-    //         (summary1.bids.len() == summary2.bids.len()) &
-    //         (summary1.asks.len() == summary2.asks.len());
-    //     if !first_res {
-    //         return first_res;
-    //     }
-    //     for (x, y) in summary1.bids.iter().zip(summary2.bids.iter()) {
-    //         let level_res = approx_eq!(f64, x.price, y.price, epsilon = 0.001) &
-    //             approx_eq!(f64, x.amount, y.amount, epsilon = 0.001) & (x.exchange == y.exchange);
-    //         if !level_res {
-    //             return level_res;
-    //         }
-    //     }
-    //     for (x, y) in summary1.asks.iter().zip(summary2.asks.iter()) {
-    //         let level_res = approx_eq!(f64, x.price, y.price, epsilon = 0.001) &
-    //             approx_eq!(f64, x.amount, y.amount, epsilon = 0.001) & (x.exchange == y.exchange);
-    //         if !level_res {
-    //             return level_res;
-    //         }
-    //     }
-    //     true
-    // }
-
     #[test]
-    fn make_summary_correctness2() {
+    fn make_summary_correctness() {
         let mut aggregator = BookAggregator::<TEST_BOOKS_SIZE>::new();
         let mut summary_correctness_helper = SummaryCorrectness::new();
         let mut rng = rand::thread_rng();
