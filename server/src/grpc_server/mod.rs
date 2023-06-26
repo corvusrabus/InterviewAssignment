@@ -12,8 +12,11 @@ pub(crate) struct BookSummaryService {
 }
 
 impl BookSummaryService {
+    // Number of updates a client can lag behind before server will start dropping
+    // old messages
+    const BUFFER_SIZE : usize = 50;
     pub fn new(symbol: &str) -> Self {
-        let (mut sender, rx) = async_broadcast::broadcast(50);
+        let (mut sender, rx) = async_broadcast::broadcast(Self::BUFFER_SIZE);
         sender.set_overflow(true);
         let receiver = rx.deactivate();
         let callback = Arc::new(BookAggregatorCallback::new(sender.clone()));
